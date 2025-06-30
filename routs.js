@@ -1,20 +1,34 @@
 import express from "express";
 import pool from "./db.js";
+import { generateToken, authenticateToken } from "./middleware/authetification.js";
+
 
 const userRouter = express.Router();
 
-userRouter.get("/users",async (req,res)=>{
-    try{
-        const result = await pool.query(
-            "SELECT * FROM users"
-        );
-        res.status(200).json(result.rows);
-    }catch(err){
-        throw new Error(`Error ${err}`);
+userRouter.post('/login', async (req, res) => {
+  const { name, surname } = req.body;
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM users WHERE name = $1 AND surname = $2',
+      [name, surname]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    const user = result.rows[0];
+    const token = generateToken(user);
+
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-userRouter.post("/users", async (req, res) => {
+userRouter.post("/register", async (req, res) => {
   const { name, surname } = req.body;
   try {
     const checker = await pool.query(
@@ -32,6 +46,20 @@ userRouter.post("/users", async (req, res) => {
     console.error("DB error:", err);
     res.status(500).json({ error: "Something went wrong" });
   }
+});
+
+
+userRouter.use(authenticateToken);
+
+userRouter.get("/users",async (req,res)=>{
+    try{
+        const result = await pool.query(
+            "SELECT * FROM users"
+        );
+        res.status(200).json(result.rows);
+    }catch(err){
+        throw new Error(`Error ${err}`);
+    }
 });
 
 
