@@ -1,17 +1,17 @@
 import express from "express";
 import pool from "./db.js";
 import { generateToken, authenticateToken } from "./middleware/authetification.js";
-
+import bcrypt from "bcrypt";
 
 const userRouter = express.Router();
 
 userRouter.post('/login', async (req, res) => {
-  const { name, surname } = req.body;
+  const { name, password } = req.body;
 
   try {
     const result = await pool.query(
-      'SELECT * FROM users WHERE name = $1 AND surname = $2',
-      [name, surname]
+      'SELECT * FROM users WHERE name = $1',
+      [name]
     );
 
     if (result.rowCount === 0) {
@@ -19,34 +19,55 @@ userRouter.post('/login', async (req, res) => {
     }
 
     const user = result.rows[0];
+
+  
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    
     const token = generateToken(user);
 
     res.json({ token });
+
   } catch (err) {
-    console.error(err);
+    console.error("Login error:", err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
+
 userRouter.post("/register", async (req, res) => {
-  const { name, surname } = req.body;
+  const { name, password } = req.body;
+
   try {
-    const checker = await pool.query(
-        `SELECT * FROM users WHERE name =$1 AND surname =$2`,[name,surname]
-    )
-    if(checker.rowCount > 0){
-        return res.status(409).json({error: "User already exist"})
-    }
-    const result = await pool.query(
-      "INSERT INTO users (name, surname) VALUES ($1, $2) RETURNING *",
-      [name, surname]
+  
+    const userExists = await pool.query(
+      `SELECT * FROM users WHERE name = $1`,
+      [name]
     );
+    if (userExists.rowCount > 0) {
+      return res.status(409).json({ error: "User already exists" });
+    }
+
+    const saltRounds = 130;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+   
+    const result = await pool.query(
+      `INSERT INTO users (name, password) VALUES ($1, $2) RETURNING *`,
+      [name, hashedPassword]
+    );
+
     res.status(201).json(result.rows[0]);
+
   } catch (err) {
     console.error("DB error:", err);
     res.status(500).json({ error: "Something went wrong" });
   }
 });
+
 
 
 userRouter.use(authenticateToken);
@@ -66,12 +87,12 @@ userRouter.get("/users",async (req,res)=>{
 
 userRouter.put("/users/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, surname } = req.body;
+  const { name, password } = req.body;
 
   try {
     const result = await pool.query(
-      `UPDATE users SET name = $1, surname = $2 WHERE id = $3 RETURNING *`,
-      [name, surname, id]
+      `UPDATE users SET name = $1, password = $2 WHERE id = $3 RETURNING *`,
+      [name, password, id]
     );
 
     if (result.rowCount === 0) {
