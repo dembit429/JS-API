@@ -1,9 +1,28 @@
 import express from "express";
 import pool from "./db.js";
-import { generateToken, authenticateToken } from "./middleware/authetification.js";
+import jwt from 'jsonwebtoken';
+import { generateAccessToken, authenticateAcessToken,generateRefreshToken } from "./middleware/authetification.js";
 import bcrypt from "bcrypt";
 
 const userRouter = express.Router();
+
+userRouter.post('/refresh', (req, res) => {
+  const token = req.cookies.refreshToken;
+  console.log("Received refresh token:", token);
+
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+    if (err) {
+      console.error("Refresh token verification failed:", err);
+      return res.sendStatus(403);
+    }
+
+    const newAccessToken = generateAccessToken(user);
+    res.json({ token: newAccessToken });
+  });
+});
+
 
 userRouter.post('/login', async (req, res) => {
   const { name, password } = req.body;
@@ -26,10 +45,17 @@ userRouter.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    
-    const token = generateToken(user);
 
-    res.json({ token });
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false, 
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 
+    });
+    res.json({ token: accessToken });
 
   } catch (err) {
     console.error("Login error:", err);
@@ -47,7 +73,9 @@ userRouter.post("/register", async (req, res) => {
       `SELECT * FROM users WHERE name = $1`,
       [name]
     );
+    
     if (userExists.rowCount > 0) {
+      console.log("User already exists:", name);
       return res.status(409).json({ error: "User already exists" });
     }
 
@@ -61,6 +89,7 @@ userRouter.post("/register", async (req, res) => {
     );
 
     res.status(201).json(result.rows[0]);
+    console.log("User registered successfully:", result.rows[0]);
 
   } catch (err) {
     console.error("DB error:", err);
@@ -70,7 +99,7 @@ userRouter.post("/register", async (req, res) => {
 
 
 
-userRouter.use(authenticateToken);
+userRouter.use(authenticateAcessToken);
 
 userRouter.get("/users",async (req,res)=>{
     try{

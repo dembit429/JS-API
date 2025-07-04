@@ -4,19 +4,19 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export function generateToken(user) {
+export function generateAccessToken(user) {
  
   const payload = {
     id: user.id,
     name: user.name,
-    password: user.password
+    role: user.role || 'user'
   };
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '1m' });
 }
 
 
-export function authenticateToken(req, res, next) {
+export function authenticateAcessToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; 
 
@@ -34,4 +34,13 @@ export function authenticateToken(req, res, next) {
   });
 }
 
-export default {generateToken, authenticateToken};
+export function generateRefreshToken(user) {
+  return jwt.sign(
+    { id: user.id },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: "7d" }
+  );
+}
+
+
+export default {generateAccessToken, authenticateToken: authenticateAcessToken, generateRefreshToken};
