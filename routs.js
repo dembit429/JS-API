@@ -51,7 +51,7 @@ userRouter.post("/register", async (req, res) => {
       return res.status(409).json({ error: "User already exists" });
     }
 
-    const saltRounds = 130;
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
    
