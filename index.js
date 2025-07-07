@@ -16,3 +16,5 @@ app.use("/",userRouter);
 app.listen(port, () => {
   console.log(chalk.bgCyanBright(`Server running on port ${port}`));
 });
+
+for()
