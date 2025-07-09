@@ -71,47 +71,53 @@ userRouter.post('/login', async (req, res) => {
 userRouter.post("/register", async (req, res) => {
   const { name, password } = req.body;
 
-  const result = await userService.createUser(name, password);
-  return result;
+  try {
+    const result = await userService.createUser(name, password);
+
+    if (result.error) {
+      return res.status(409).json(result);
+    }
+
+    return res.status(201).json(result);
+
+  } catch (err) {
+    console.error("Registration error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
+
 
 
 
 userRouter.use(authenticateAcessToken);
 
-userRouter.get(async (req,res)=>{
+userRouter.get("/",async (req,res)=>{
     try{
-        const result = await pool.query(
-            "SELECT * FROM users"
-        );
-        res.status(200).json(result.rows);
+        const result = await userService.getUsers();
+        res.status(200).json(result);
     }catch(err){
         throw new Error(`Error ${err}`);
     }
 });
 
 
-
 userRouter.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { name, password } = req.body;
-
   try {
-    const result = await pool.query(
-      `UPDATE users SET name = $1, password = $2 WHERE id = $3 RETURNING *`,
-      [name, password, id]
-    );
+    const updatedUser = await userService.updateUser(id, name, password);
 
-    if (result.rowCount === 0) {
+    if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json( {message : `User with ID ${id} updated successfully`});
+    res.status(200).json(updatedUser);
   } catch (err) {
-    console.error("Update error:", err);
+    console.error("Error updating user:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 
 userRouter.delete("/:id", async (req, res) => {
