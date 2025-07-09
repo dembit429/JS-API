@@ -3,7 +3,9 @@ import pool from "./db.js";
 import jwt from 'jsonwebtoken';
 import { generateAccessToken, authenticateAcessToken,generateRefreshToken } from "./middleware/authetification.js";
 import bcrypt from "bcrypt";
+import UserService from "./services/user.js";
 
+const userService = new UserService();
 const userRouter = express.Router();
 
 userRouter.post('/refresh', (req, res) => {
@@ -69,41 +71,15 @@ userRouter.post('/login', async (req, res) => {
 userRouter.post("/register", async (req, res) => {
   const { name, password } = req.body;
 
-  try {
-  
-    const userExists = await pool.query(
-      `SELECT * FROM users WHERE name = $1`,
-      [name]
-    );
-    
-    if (userExists.rowCount > 0) {
-      console.log("User already exists:", name);
-      return res.status(409).json({ error: "User already exists" });
-    }
-
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-   
-    const result = await pool.query(
-      `INSERT INTO users (name, password) VALUES ($1, $2) RETURNING *`,
-      [name, hashedPassword]
-    );
-
-    res.status(201).json(result.rows[0]);
-    console.log("User registered successfully:", result.rows[0]);
-
-  } catch (err) {
-    console.error("DB error:", err);
-    res.status(500).json({ error: "Something went wrong" });
-  }
+  const result = await userService.createUser(name, password);
+  return result;
 });
 
 
 
 userRouter.use(authenticateAcessToken);
 
-userRouter.get("/users",async (req,res)=>{
+userRouter.get(async (req,res)=>{
     try{
         const result = await pool.query(
             "SELECT * FROM users"
@@ -116,7 +92,7 @@ userRouter.get("/users",async (req,res)=>{
 
 
 
-userRouter.put("/users/:id", async (req, res) => {
+userRouter.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { name, password } = req.body;
 
@@ -138,7 +114,7 @@ userRouter.put("/users/:id", async (req, res) => {
 });
 
 
-userRouter.delete("/users/:id", async (req, res) => {
+userRouter.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {

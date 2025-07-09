@@ -11,10 +11,8 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/",userRouter);
+app.use("/users",userRouter);
 
 app.listen(port, () => {
   console.log(chalk.bgCyanBright(`Server running on port ${port}`));
 });
-
-for()
