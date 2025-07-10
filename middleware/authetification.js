@@ -12,7 +12,7 @@ export function generateAccessToken(user) {
     role: user.role || 'user'
   };
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '1m' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '5m' });
 }
 
 
