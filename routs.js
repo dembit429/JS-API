@@ -1,7 +1,7 @@
 import express from "express";
 import pool from "./db.js";
 import jwt from 'jsonwebtoken';
-import { generateAccessToken, authenticateAcessToken,generateRefreshToken } from "./middleware/authetification.js";
+import { generateAccessToken, authenticateAccessToken,generateRefreshToken } from "./middleware/authetification.js";
 import bcrypt from "bcrypt";
 import UserService from "./services/user.js";
 
@@ -89,7 +89,7 @@ userRouter.post("/register", async (req, res) => {
 
 
 
-userRouter.use(authenticateAcessToken);
+userRouter.use(authenticateAccessToken);
 
 userRouter.get("/",async (req,res)=>{
     try{
