@@ -1,8 +1,5 @@
 
   import pool from "../db.js"; 
-
-  import jwt from 'jsonwebtoken';
-  // import { generateAccessToken, authenticateAcessToken,generateRefreshToken } from "./middleware/authetification.js";
   import bcrypt from "bcrypt";
 
   export default class UserService {
