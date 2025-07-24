@@ -39,7 +39,7 @@ userRouter.post('/login', async (req, res) => {
     console.log(result);
 
     if (!result) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(404).json({ error: 'Invalid credentials' });
     }
 
     const user = result;

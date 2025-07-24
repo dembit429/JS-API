@@ -1,5 +1,3 @@
-import { defaults } from "pg";
-import sequelize from "../db.js";
 import User from "../Orm_models/userModel.js"
 import bcrypt from "bcrypt";
 
@@ -47,8 +45,9 @@ export default class UserService {
     try {
       const result = await User.findOne({ where: { name: name } });
       console.log(result);
+
       if (result === null){
-        return {error:"User not found"};
+        return null;
       } 
       return result;
     } catch (err) {
