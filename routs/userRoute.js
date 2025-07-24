@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import { generateAccessToken, generateRefreshToken,authenticateAcessToken } from "../middleware/authetification.js";
 import bcrypt from "bcrypt";
 import UserService from "../services/user.js";
-import User from "../Orm_models/userModel.js";
 
 
 

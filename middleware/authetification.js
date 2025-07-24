@@ -12,11 +12,11 @@ export function generateAccessToken(user) {
     role: user.role || 'user'
   };
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '5m' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '15m' });
 }
 
 
-export function authenticateAcessToken(req, res, next) {
+export function authenticateAccessToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; 
 
@@ -43,4 +43,4 @@ export function generateRefreshToken(user) {
 }
 
 
-export default {generateAccessToken, authenticateToken: authenticateAcessToken, generateRefreshToken};
+export default {generateAccessToken, authenticateToken: authenticateAccessToken, generateRefreshToken};
