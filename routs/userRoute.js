@@ -1,6 +1,6 @@
 import express from "express";
 import jwt from 'jsonwebtoken';
-import { generateAccessToken, generateRefreshToken,authenticateAcessToken } from "../middleware/authetification.js";
+import { generateAccessToken, generateRefreshToken, authenticateAccessToken } from "../middleware/authetification.js";
 import bcrypt from "bcrypt";
 import UserService from "../services/user.js";
 
@@ -63,7 +63,7 @@ userRouter.post('/login', async (req, res) => {
 
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ error: 'Internal server error'+ err });
+    res.status(500).json({ error: 'Internal server error: ' + String(err) });
   }
 });
 
@@ -88,7 +88,7 @@ userRouter.post("/register", async (req, res) => {
 
 
 
-userRouter.use(authenticateAcessToken);
+userRouter.use(authenticateAccessToken);
 
 userRouter.get("/", async (req, res) => {
   try {

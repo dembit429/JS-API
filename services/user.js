@@ -20,7 +20,7 @@ export default class UserService {
       }
 
       console.log("User registered successfully:", user.toJSON());
-      
+
       return user;
 
     } catch (err) {
@@ -46,9 +46,9 @@ export default class UserService {
       const result = await User.findOne({ where: { name: name } });
       console.log(result);
 
-      if (result === null){
+      if (result === null) {
         return null;
-      } 
+      }
       return result;
     } catch (err) {
       console.error("DB error:", err);
@@ -65,7 +65,7 @@ export default class UserService {
         { where: { id: userId } }
       );
 
-      if(result === 0){
+      if (result === 0) {
         return null;
       }
       const updatedUser = await User.findByPk(userId);
@@ -79,13 +79,13 @@ export default class UserService {
   async deleteUser(userId) {
     try {
       const result = await User.destroy({
-        where:{id:userId}
+        where: { id: userId }
       })
-      if(result === 0){
+      if (result === 0) {
         return null;
       }
-      
-      return {Delete: `User ${userId} deleted successfully.`}
+
+      return { Delete: `User ${userId} deleted successfully.` }
     } catch (err) {
       console.error("Delete error:", err);
       throw err;
