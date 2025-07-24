@@ -28,8 +28,6 @@ userRouter.post('/refresh', (req, res) => {
 
 
 userRouter.post('/login', async (req, res) => {
-  console.log("Waiting for debugger...");
-  debugger;
   const { name, password } = req.body;
 
   try {

@@ -85,7 +85,7 @@ export default class UserService {
         return null;
       }
       
-      return {Delete: `User ${userId} deleted successful.`}
+      return {Delete: `User ${userId} deleted successfully.`}
     } catch (err) {
       console.error("Delete error:", err);
       throw err;
