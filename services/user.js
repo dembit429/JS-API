@@ -46,7 +46,7 @@ export default class UserService {
       const result = await User.findOne({ where: { name: name } });
       console.log(result);
 
-      if (result === null) {
+      if (!result) {
         return null;
       }
       return result;
@@ -65,7 +65,7 @@ export default class UserService {
         { where: { id: userId } }
       );
 
-      if (result === 0) {
+      if (!result) {
         return null;
       }
       const updatedUser = await User.findByPk(userId);
@@ -81,7 +81,7 @@ export default class UserService {
       const result = await User.destroy({
         where: { id: userId }
       })
-      if (result === 0) {
+      if (!result) {
         return null;
       }
 

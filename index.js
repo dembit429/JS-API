@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import userRouter from './routs/userRoute.js'; 
 import chalk from 'chalk';
 import cookieParser from 'cookie-parser';
+import logger from './logger.js';
 dotenv.config();
 
 const app = express();
@@ -14,5 +15,5 @@ app.use(cookieParser());
 app.use("/users",userRouter);
 
 app.listen(port, () => {
-  console.log(chalk.bgCyanBright(`Server running on port ${port}`));
+  logger.info(chalk.bgCyanBright(`Server running on port ${port}`));
 });
