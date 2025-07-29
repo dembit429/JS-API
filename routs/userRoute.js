@@ -1,9 +1,10 @@
 import express from "express";
-import pool from "./db.js";
 import jwt from 'jsonwebtoken';
-import { generateAccessToken, authenticateAccessToken,generateRefreshToken } from "./middleware/authetification.js";
+import { generateAccessToken, generateRefreshToken, authenticateAccessToken } from "../middleware/authetification.js";
 import bcrypt from "bcrypt";
-import UserService from "./services/user.js";
+import UserService from "../services/user.js";
+
+
 
 const userService = new UserService();
 const userRouter = express.Router();
@@ -30,19 +31,18 @@ userRouter.post('/login', async (req, res) => {
   const { name, password } = req.body;
 
   try {
-    const result = await pool.query(
-      'SELECT * FROM users WHERE name = $1',
-      [name]
-    );
+    const result = await userService.getUserbyName(name);
 
-    if (result.rowCount === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    console.log(result);
+
+    if (!result) {
+      return res.status(404).json({ error: 'Invalid credentials' });
     }
 
-    const user = result.rows[0];
+    const user = result;
 
-  
-    const isMatch = await bcrypt.compare(password, user.password);
+
+    const isMatch = await bcrypt.compare(password, result.password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -50,20 +50,20 @@ userRouter.post('/login', async (req, res) => {
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-   
+
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: false, 
+      secure: false,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 
+      maxAge: 7 * 24 * 60 * 60 * 1000
     });
-    
+
     res.json({ token: accessToken });
 
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error: ' + String(err) });
   }
 });
 
@@ -82,40 +82,42 @@ userRouter.post("/register", async (req, res) => {
 
   } catch (err) {
     console.error("Registration error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Server error. Registration" });
   }
 });
 
 
 
-
 userRouter.use(authenticateAccessToken);
 
-userRouter.get("/",async (req,res)=>{
-    try{
-        const result = await userService.getUsers();
-        res.status(200).json(result);
-    }catch(err){
-        throw new Error(`Error ${err}`);
-    }
+userRouter.get("/", async (req, res) => {
+  try {
+    const result = await userService.getUsers();
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Route error:", err);
+    res.status(500).json({ error: err.message || "Server error" });
+  }
 });
 
 
 userRouter.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { name, password } = req.body;
-  try {
-    const updatedUser = await userService.updateUser(id, name, password);
 
-    if (!updatedUser) {
+  try {
+    const updatedUser = await userService.updateUser(Number(id), name, password);
+
+    if(!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
 
     res.status(200).json(updatedUser);
   } catch (err) {
     console.error("Error updating user:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Error updating user: " + err.message });
   }
+
 });
 
 
@@ -124,8 +126,9 @@ userRouter.delete("/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const result = await userService.deleteUser(id);
-    if (result.error) {
-      return res.status(404).json(result);
+    
+    if (!result) {
+      return res.status(404).json({error: "User not found"});
     }
     res.status(200).json(result);
   } catch (err) {

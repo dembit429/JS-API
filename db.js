@@ -1,23 +1,33 @@
+  import { Sequelize } from "sequelize";
+  import dotenv from "dotenv";
 
-import { Pool } from "pg";
-import dotenv from "dotenv";
+  dotenv.config();
 
-dotenv.config();
+  const config = {
+    dbName: process.env.DB_NAME,
+    dbUser: process.env.DB_USER,
+    dbPassword: process.env.DB_PASSWORD
+  };
+  
 
-const pool = new Pool({
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-});
-
-try {
-  const res = await pool.query('SELECT NOW()');
-  console.log('Connected ✅', res.rows);
-} catch (err) {
-  console.error('Connection failed ❌', err);
-}
+  const sequelize = new Sequelize(config.dbName,config.dbUser,config.dbPassword,{
+    host:"localhost",
+    dialect:'postgres',
+    logging:true,
+  });
 
 
-export default pool;
+  (async ()=>{
+    try{
+      await sequelize.authenticate();
+
+      console.log("Connection successful.");
+    }
+    catch(err){
+      console.log(err);
+    }
+  })();
+
+  export default sequelize;
+  
+

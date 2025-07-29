@@ -1,84 +1,97 @@
+import User from "../Orm_models/userModel.js"
+import bcrypt from "bcrypt";
 
-  import pool from "../db.js"; 
-  import bcrypt from "bcrypt";
+export default class UserService {
 
-  export default class UserService {
-    async createUser(name, password) {
-      try {
-        const userExists = await pool.query(
-          `SELECT * FROM users WHERE name = $1`,
-          [name]
-        );
-
-        if (userExists.rowCount > 0) {
-          console.log("User already exists:", name);
-          return { error: "User already exists" };
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await pool.query(
-          "INSERT INTO users (name, password) VALUES ($1, $2) RETURNING *",
-          [name, hashedPassword]
-        );
-
-        console.log("User registered successfully:", result.rows[0]);
-        return result.rows[0];
-
-      } catch (err) {
-        console.error("DB error:", err);
-        throw new Error("Something went wrong");
-      }
-    }
-
-    async getUsers(){
-      try{
-          const result = await pool.query(
-              "SELECT * FROM users"
-          );
-          return result.rows;
-      }catch (err) {
-          console.error("DB error:", err);
-          throw new Error("Something went wrong");
-      }
-    }
-
-    async updateUser(id, name, password) {
+  async createUser(name, password) {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const result = await pool.query(
-        `UPDATE users SET name = $1, password = $2 WHERE id = $3 RETURNING *`,
-        [name, hashedPassword, id]
-      );
 
-      if (result.rowCount === 0) {
-        return null; 
+      const [user, created] = await User.findOrCreate({
+        where: { name },
+        defaults: {
+          password: hashedPassword,
+        },
+      });
+
+      if (!created) {
+        console.log("User already exists:", name);
+        return { error: "User already exists" };
       }
 
-      return result.rows[0];
+      console.log("User registered successfully:", user.toJSON());
+
+      return user;
+
+    } catch (err) {
+      console.error("DB error:", err);
+      throw new Error("Something went wrong");
+    }
+  }
+
+
+  async getUsers() {
+    try {
+      const result = await User.findAll();
+      return result;
+    } catch (err) {
+      console.error("DB error:", err);
+      throw new Error("Something went wrong");
+    }
+  }
+
+
+  async getUserbyName(name) {
+    try {
+      const result = await User.findOne({ where: { name: name } });
+      console.log(result);
+
+      if (result === null) {
+        return null;
+      }
+      return result;
+    } catch (err) {
+      console.error("DB error:", err);
+      throw new Error("Something went wrong");
+    }
+  }
+
+  async updateUser(userId, newName, newPassword) {
+    try {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const [result] = await User.update(
+        { name: newName, password: hashedPassword },
+        { where: { id: userId } }
+      );
+
+      if (result === 0) {
+        return null;
+      }
+      const updatedUser = await User.findByPk(userId);
+      return updatedUser;
     } catch (err) {
       console.error("Update error:", err);
       throw err;
     }
   }
 
-  async deleteUser(id){
+  async deleteUser(userId) {
     try {
-      const result = await pool.query(
-        `DELETE FROM users WHERE id = $1 RETURNING name`,
-        [id]
-      );
-
-      if (result.rowCount === 0) {
-        return { error: "User not found" };
+      const result = await User.destroy({
+        where: { id: userId }
+      })
+      if (result === 0) {
+        return null;
       }
 
-      return { status: "User deleted successfully", user: result.rows[0] };
+      return { Delete: `User ${userId} deleted successfully.` }
     } catch (err) {
       console.error("Delete error:", err);
       throw err;
     }
   }
 
-  }
+}
 
-  export const userService = new UserService();
+export const userService = new UserService();
