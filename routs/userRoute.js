@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { generateAccessToken, generateRefreshToken, authenticateAccessToken } from "../middleware/authetification.js";
 import bcrypt from "bcrypt";
 import UserService from "../services/user.js";
+import logger from "../logger.js";
 
 
 
@@ -88,15 +89,17 @@ userRouter.post("/register", async (req, res) => {
 
 
 
-userRouter.use(authenticateAccessToken);
+//userRouter.use(authenticateAccessToken);
 
 userRouter.get("/", async (req, res) => {
   try {
     const result = await userService.getUsers();
     res.status(200).json(result);
+    logger.info(`[USER ROUTE] GET /users executed with code:${res.statusCode}`)
   } catch (err) {
     console.error("Route error:", err);
     res.status(500).json({ error: err.message || "Server error" });
+    logger.error({ error: err.message || "Server error" })
   }
 });
 
