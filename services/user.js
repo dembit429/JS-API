@@ -35,7 +35,7 @@ class UserService {
       const users = await User.findAll();
 
       if (users.length === 0) {
-        throw new Error("USER_NOT_FOUND");
+        throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
       }
 
       return users;
@@ -48,7 +48,7 @@ class UserService {
   async getUserbyName(name) {
     try {
       const result = await User.findOne({ where: { name: name } });
-      console.log(result);
+      logger.log(result);
 
       if (!result) {
         throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
@@ -72,10 +72,9 @@ class UserService {
       if (!result) {
         throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
       }
-      const updatedUser = await User.findByPk(userId);
-      return updatedUser;
+      return User.findByPk(userId);
     } catch (err) {
-      console.error("Update error:", err);
+      logger.error("Update error:", err);
       throw err;
     }
   }
@@ -91,7 +90,7 @@ class UserService {
 
       return { Delete: `User ${userId} deleted successfully.` };
     } catch (err) {
-      console.error("Delete error:", err);
+      logger.error("Delete error:", err);
       throw err;
     }
   }
