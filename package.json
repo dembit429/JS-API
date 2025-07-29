@@ -4,7 +4,10 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "restart": "nodemon index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [],
   "author": "",
@@ -12,7 +15,6 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "chalk": "^5.4.1",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
@@ -22,9 +24,13 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "chalk": "^5.4.1",
     "eslint": "^9.30.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
     "globals": "^16.3.0",
     "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
     "sequelize-cli": "^6.6.3"
   }
 }

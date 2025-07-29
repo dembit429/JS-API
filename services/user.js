@@ -1,12 +1,16 @@
-import User from "../Orm_models/userModel.js"
+import User from "../db/models/userModel.js";
 import bcrypt from "bcrypt";
+import { ERROR_MESSAGES } from "../errors.js";
+import logger from "../logger/logger.js";
 
-export default class UserService {
-
+class UserService {
   async createUser(name, password) {
     try {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      if (!name || !password) {
+        throw new Error(ERROR_MESSAGES.MISSING_CREDENTIALS);
+      }
 
+      const hashedPassword = await bcrypt.hash(password, 10);
       const [user, created] = await User.findOrCreate({
         where: { name },
         defaults: {
@@ -15,31 +19,31 @@ export default class UserService {
       });
 
       if (!created) {
-        console.log("User already exists:", name);
-        return { error: "User already exists" };
+        throw new Error(ERROR_MESSAGES.USER_EXISTS);
       }
 
-      console.log("User registered successfully:", user.toJSON());
-
+      logger.info("User registered successfully:", user.toJSON());
       return user;
-
     } catch (err) {
-      console.error("DB error:", err);
-      throw new Error("Something went wrong");
+      logger.error("DB error:", err);
+      throw err;
     }
   }
-
 
   async getUsers() {
     try {
-      const result = await User.findAll();
-      return result;
+      const users = await User.findAll();
+
+      if (users.length === 0) {
+        throw new Error("USER_NOT_FOUND");
+      }
+
+      return users;
     } catch (err) {
-      console.error("DB error:", err);
-      throw new Error("Something went wrong");
+      logger.error("DB error:", err);
+      throw err;
     }
   }
-
 
   async getUserbyName(name) {
     try {
@@ -47,12 +51,12 @@ export default class UserService {
       console.log(result);
 
       if (!result) {
-        return null;
+        throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
       }
       return result;
     } catch (err) {
-      console.error("DB error:", err);
-      throw new Error("Something went wrong");
+      logger.error("DB error:", err);
+      throw err;
     }
   }
 
@@ -62,11 +66,11 @@ export default class UserService {
 
       const [result] = await User.update(
         { name: newName, password: hashedPassword },
-        { where: { id: userId } }
+        { where: { id: userId } },
       );
 
       if (!result) {
-        return null;
+        throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
       }
       const updatedUser = await User.findByPk(userId);
       return updatedUser;
@@ -79,19 +83,19 @@ export default class UserService {
   async deleteUser(userId) {
     try {
       const result = await User.destroy({
-        where: { id: userId }
-      })
+        where: { id: userId },
+      });
       if (!result) {
-        return null;
+        throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
       }
 
-      return { Delete: `User ${userId} deleted successfully.` }
+      return { Delete: `User ${userId} deleted successfully.` };
     } catch (err) {
       console.error("Delete error:", err);
       throw err;
     }
   }
-
 }
 
-export const userService = new UserService();
+const userService = new UserService();
+export default userService;
