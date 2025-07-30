@@ -49,7 +49,7 @@ class UserService {
       if (!result) {
         throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
       }
-      logger.log(result);
+      logger.info("User retrieved successfully:", result);
       return { Data: result };
     } catch (err) {
       logger.error("DB error:", err);

@@ -37,9 +37,3 @@ export function generateRefreshToken(user) {
     expiresIn: "7d",
   });
 }
-
-export default {
-  generateAccessToken,
-  authenticateToken: authenticateAccessToken,
-  generateRefreshToken,
-};
