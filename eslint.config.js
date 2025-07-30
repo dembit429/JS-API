@@ -15,7 +15,7 @@ export default defineConfig([
       prettier,
     },
     rules: {
-      "prettier/prettier": "error",
+      "prettier/prettier": "warn",
     },
   },
 ]);

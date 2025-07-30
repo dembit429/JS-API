@@ -19,5 +19,5 @@ app.use("/users", userRouter);
   await sequelize.authenticate();
 })();
 app.listen(port, () => {
-  logger.info(chalk.bgCyanBright(`Server running on port ${port}`));
+  logger.info(chalk.bgCyanBright(`Server running on port: ${port}`));
 });

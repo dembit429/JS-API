@@ -1,14 +1,7 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  authenticateAccessToken,
-} from "../middleware/authetification.js";
-import bcrypt from "bcrypt";
+import { STATUS_CODES } from "../exceptions/statusCode.js";
 import userService from "../services/user.js";
 import logger from "../logger/logger.js";
-import { ERROR_MESSAGES } from "../errors.js";
+import { ERROR_MESSAGES } from "../exceptions/errors.js";
 
 class UserController {
   async createUser(req, res) {
@@ -18,25 +11,31 @@ class UserController {
         req.body.password,
       );
 
-      return res.status(201).json(result);
+      return res.status(STATUS_CODES.CREATED).json(result);
     } catch (err) {
       logger.error("Registration error:", err.message);
 
       if (err.message === ERROR_MESSAGES.MISSING_CREDENTIALS) {
-        return res.status(400).json({ error: "Missing credentials" });
+        return res
+          .status(STATUS_CODES.BAD_REQUEST)
+          .json({ Error: "Missing credentials" });
       }
       if (err.message === ERROR_MESSAGES.USER_EXISTS) {
-        return res.status(409).json({ error: "User already exists" });
+        return res
+          .status(STATUS_CODES.CONFLICT)
+          .json({ Error: "User already exists" });
       }
 
-      res.status(500).json({ error: "Server error. Registration" });
+      res
+        .status(STATUS_CODES.Internal_Server_Error)
+        .json({ Error: "Server error. Registration" });
     }
   }
 
   async getUsers(req, res) {
     try {
       const result = await userService.getUsers();
-      res.status(200).json(result);
+      res.status(STATUS_CODES.OK).json(result);
       logger.info(
         `[USER ROUTE] GET /users executed with code:${res.statusCode}`,
       );
@@ -44,11 +43,15 @@ class UserController {
       logger.error("[GET] Error:", err);
 
       if (err.message === ERROR_MESSAGES.USER_NOT_FOUND) {
-        return res.status(404).json({ error: "User not found" });
+        return res
+          .status(STATUS_CODES.NOT_FOUND)
+          .json({ Error: "User not found" });
       }
 
-      res.status(500).json({ error: err.message || "Server error" });
-      logger.error({ error: err.message || "Server error" });
+      res
+        .status(STATUS_CODES.Internal_Server_Error)
+        .json({ Error: err.message || "Server error" });
+      logger.error({ Error: err.message || "Server error" });
     }
   }
 
@@ -61,16 +64,22 @@ class UserController {
       );
 
       if (!updatedUser) {
-        return res.status(404).json({ error: "User not found" });
+        return res
+          .status(STATUS_CODES.NOT_FOUND)
+          .json({ Error: "User not found" });
       }
 
-      res.status(200).json(updatedUser);
+      res.status(STATUS_CODES.OK).json(updatedUser);
     } catch (err) {
       if (err.message === ERROR_MESSAGES.USER_NOT_FOUND) {
-        return res.status(404).json({ error: "User not found" });
+        return res
+          .status(STATUS_CODES.NOT_FOUND)
+          .json({ Error: "User not found" });
       }
       console.error("Error updating user:", err);
-      res.status(500).json({ error: "Error updating user: " + err.message });
+      res
+        .status(STATUS_CODES.Internal_Server_Error)
+        .json({ Error: "Error updating user: " + err.message });
     }
   }
 
@@ -78,15 +87,21 @@ class UserController {
     try {
       const result = await userService.deleteUser(req.params.id);
       if (!result) {
-        return res.status(404).json({ error: "User not found" });
+        return res
+          .status(STATUS_CODES.NOT_FOUND)
+          .json({ Error: "User not found" });
       }
-      res.status(200).json(result);
+      res.status(STATUS_CODES.OK).json(result);
     } catch (err) {
       if (err.message === ERROR_MESSAGES.USER_NOT_FOUND) {
-        return res.status(404).json({ error: "User not found" });
+        return res
+          .status(STATUS_CODES.NOT_FOUND)
+          .json({ Error: "User not found" });
       }
       logger.error("Error deleting user:", err);
-      res.status(500).json({ error: "Internal server error" });
+      res
+        .status(STATUS_CODES.Internal_Server_Error)
+        .json({ Error: "Internal server error" });
     }
   }
 }

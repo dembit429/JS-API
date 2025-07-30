@@ -8,19 +8,22 @@ module.exports = {
       [
         {
           name: "John Doe",
-          password: "1234@example.com",
+          password:
+            "$2b$10$/IMLOCT9ctzSHh5Z49GfnuJSmMP4iy3CXmFf0k7xyg8g8ZwVVOeKq",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           name: `Maksim`,
-          password: "1234634",
+          password:
+            "$2b$10$/IMLOCT9ctzSHh5Z49GfnuJSmMP4iy3CXmFf0k7xyg8g8ZwVVOeKq",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           name: `Romaus`,
-          password: "4321",
+          password:
+            "$2b$10$/IMLOCT9ctzSHh5Z49GfnuJSmMP4iy3CXmFf0k7xyg8g8ZwVVOeKq",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
