@@ -76,7 +76,7 @@ class UserController {
           .status(STATUS_CODES.NOT_FOUND)
           .json({ Error: "User not found" });
       }
-      console.error("Error updating user:", err);
+      logger.error("Error updating user:", err);
       res
         .status(STATUS_CODES.Internal_Server_Error)
         .json({ Error: "Error updating user: " + err.message });

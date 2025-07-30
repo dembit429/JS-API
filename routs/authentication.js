@@ -22,7 +22,7 @@ authenticationRouter.post("/refresh", (req, res) => {
     process.env.REFRESH_TOKEN_SECRET,
     (err, user) => {
       if (err) {
-        console.error("Refresh token verification failed:", err);
+        logger.error("Refresh token verification failed:", err);
         return res.sendStatus(STATUS_CODES.CONFLICT);
       }
 

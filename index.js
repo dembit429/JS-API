@@ -15,9 +15,10 @@ app.use(cookieParser());
 
 app.use("/", router);
 
-// (async () => {
-//   await sequelize.authenticate();
-// })();
+(async () => {
+  await sequelize.authenticate();
+})();
+
 app.listen(port, () => {
   logger.info(chalk.bgCyanBright(`Server running on port: ${port}`));
 });
